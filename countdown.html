@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+<style>
+p {
+  text-align: center;
+  font-size: 60px;
+  font-family: Impact, Charcoal, sans-serif;
+}
+.text {
+  padding: 25px 5px 25px 5px;
+}
+body {
+  background: linear-gradient(to bottom, #F2F5A9 0%, #F2F5A9 50%, #FBE479 50%, #FBE479 100%);
+}
+#container {
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  width:30em;
+  height:20em;
+  margin-top: -10em; /*set to a negative number 1/2 of your height*/
+  margin-left: -15em; /*set to a negative number 1/2 of your width*/
+  border-radius: 25px;
+  border: 5px solid #22B5EB;
+  background-color: #f3f3f3;
+}
+</style>
+<title>Sample countdown</title>
+</head>
+<body>
+<div class="main">
+  <div id="container">
+    <div class="text">
+      <p id="clock"></p>
+    </div>
+  </div>
+</div>
+<script>
+// Set the date we're counting down to
+var countDownDate = new Date("15 Oct, 2017 09:00:00").getTime();
+
+// Update the count down every 1 second
+var x = setInterval(function() {
+
+    // Get todays date and time
+    var now = new Date().getTime();
+    
+    // Find the distance between now an the count down date
+    var distance = countDownDate - now;
+    
+    // Time calculations for days, hours, minutes and seconds
+    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    hours = ("0" + hours).slice(-2);
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    minutes = ("0" + minutes).slice(-2);
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    seconds = ("0" + seconds).slice(-2);
+    
+    // Output the result in an element with id="demo"
+    document.getElementById("clock").innerHTML = days + " Days<br>" + hours + ":"
+    + minutes + ":" + seconds;
+    
+    // If the count down is over, write some text 
+    if (distance < 0) {
+        clearInterval(x);
+        document.getElementById("clock").innerHTML = "End of waiting! ";
+    }
+}, 1000);
+</script>
+
+</body>
+</html>
