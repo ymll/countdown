@@ -1,0 +1,78 @@
+html {
+  height: 100vh;
+}
+body {
+  position:absolute;
+  top:0;
+  bottom:0;
+  right:0;
+  left:0;
+  font-family: 'Amatic SC', cursive;
+  font-size: 1em;
+  font-weight: bold;
+  text-shadow: 4px 4px 4px #aaa;
+}
+p {
+  text-align: center;
+  font-size: 100%;
+  line-height: 100%;
+}
+.day {
+  background: linear-gradient(to bottom, white 0%, #D4FFFF 80%, #79FBDD 100%);
+}
+.dawn {
+  background: linear-gradient(to bottom, #FFDF85 0%, #F2F5A9 80%, #FBE479 100%);
+}
+.night {
+  background: linear-gradient(to bottom, #2C4756 0%, #7B6396 80%, #B7B7B7 100%);
+}
+.dawn-to-night {
+  background: linear-gradient(to bottom, #ffffff00 0%, #F2F5A9 80%, #B7B7B7 100%);
+}
+.day-to-dawn {
+  background: linear-gradient(to bottom, #ffffff00 0%, #D4FFFF 80%, #79FBDD 100%);
+}
+.night-to-day {
+  background: linear-gradient(to bottom, #ffffff00 0%, #D4E5FF 80%, #7D7D7D 100%);
+}
+.container {
+  height: 80%;
+  width: 100%;
+  position: fixed;
+}
+.wrapper {
+  position:absolute;
+  top: 50%;
+  left: 50%;
+  width: 30em;
+  height: 20em;
+  margin-top: -10em; /*set to a negative number 1/2 of your height*/
+  margin-left: -15em; /*set to a negative number 1/2 of your width*/
+}
+#text {
+  padding: 25px 5px 25px 5px;
+  height: 100%;
+}
+#clock {
+  font-size: 3em;
+}
+#date {
+  font-size: 1em;
+}
+#countdown {
+  font-family: 'Fredericka the Great', cursive;
+  font-weight: normal;
+  font-size: 3em;
+  line-height: 1.2em;
+}
+#footer {
+  position:fixed;
+  left:0px;
+  bottom:-5vh;
+  height:25vh;
+  width:100%;
+  background-image: url("https://cdn.pixabay.com/photo/2016/01/02/01/17/city-1117433_960_720.png");
+  background-position: 50%;
+  background-size: 120%;
+  background-repeat: no-repeat;
+}
