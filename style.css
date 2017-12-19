@@ -68,10 +68,10 @@ p {
 #footer {
   position:fixed;
   left:0px;
-  bottom:-5vh;
+  bottom:0vh;
   height:25vh;
   width:100%;
-  background-image: url("https://cdn.pixabay.com/photo/2016/01/02/01/17/city-1117433_960_720.png");
+  background-image: url("http://dvinthk.com/images/HK_SKYLINE_DV_INTERNATIONAL.png");
   background-position: 50%;
   background-size: 120%;
   background-repeat: no-repeat;
