@@ -66,13 +66,13 @@ p {
   line-height: 1.2em;
 }
 #footer {
-  position:fixed;
-  left:0px;
-  bottom:0vh;
-  height:25vh;
-  width:100%;
-  background-image: url("http://dvinthk.com/images/HK_SKYLINE_DV_INTERNATIONAL.png");
-  background-position: 50%;
-  background-size: 120%;
+  position: fixed;
+  left: 0px;
+  bottom: 0vh;
+  height: 100%;
+  width: 100%;
+  background-image: url(../resources/skyline.png);
+  background-position: bottom;
+  background-size: 100%;
   background-repeat: no-repeat;
 }
