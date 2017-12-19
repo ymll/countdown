@@ -1,5 +1,8 @@
 // Set the date we're counting down to
 var countDownDate = new Date("23 Dec, 2017 02:45:00").getTime();
+var offset = -(new Date().getTimezoneOffset()/60);
+countDownDate = countDownDate - offset;
+
 // Update the count down every 1 second
 var x = setInterval(function() {
     // Get todays date and time
@@ -26,6 +29,7 @@ var x = setInterval(function() {
     var m = today.getMinutes();
     document.getElementById("clock").innerHTML = ("0" + h).slice(-2) + ":" + ("0" + m).slice(-2);
     document.getElementById("date").innerHTML = today.toDateString();
+
     if (h == 5) {
         document.body.className = "night-to-day"
         // magic number to fade the sky colour
