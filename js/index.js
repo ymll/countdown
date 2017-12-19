@@ -24,7 +24,7 @@ var x = setInterval(function() {
     
     var h = today.getHours();
     var m = today.getMinutes();
-    document.getElementById("clock").innerHTML = h + ":" + m;
+    document.getElementById("clock").innerHTML = ("0" + h).slice(-2) + ":" + ("0" + m).slice(-2);
     document.getElementById("date").innerHTML = today.toDateString();
     if (h == 5) {
         document.body.className = "night-to-day"
