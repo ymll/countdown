@@ -1,7 +1,7 @@
 // Set the date we're counting down to
-var countDownDate = new Date("23 Dec, 2017 02:45:00").getTime();
-var offset = -(new Date().getTimezoneOffset()/60);
-countDownDate = countDownDate - offset;
+// TODO get the time from cookies
+// 23 Dec 2017 2:45 HKT or 22 Dec 2017 18:45 UTC
+var countDownDate = new Date(Date.UTC(2017, 11, 22, 18, 45, 0));
 
 // Update the count down every 1 second
 var x = setInterval(function() {
@@ -22,8 +22,11 @@ var x = setInterval(function() {
     seconds = ("0" + seconds).slice(-2);
     
     // Output the result in an element with id="demo"
-    document.getElementById("countdown").innerHTML = days + " Days<br>" + hours + ":"
-    + minutes + ":" + seconds;
+    if (days == 1) {
+        document.getElementById("countdown").innerHTML = days + " Day<br>" + hours + ":" + minutes + ":" + seconds;
+    } else {
+        document.getElementById("countdown").innerHTML = days + " Days<br>" + hours + ":" + minutes + ":" + seconds;
+    }
     
     var h = today.getHours();
     var m = today.getMinutes();
@@ -61,7 +64,9 @@ var x = setInterval(function() {
     
     
     // If the count down is over, write some text 
-    if (distance < 0) {
+    if (distance < -864000000) {
         document.getElementById("countdown").innerHTML = "Time to plan for next trip!";
+    } else if (distance < 0) {
+        document.getElementById("countdown").innerHTML = "Happy Reunion!";
     }
 }, 1000);
