@@ -1,16 +1,87 @@
 // Set the date we're counting down to
 // TODO get the time from cookies
 // 23 Dec 2017 2:45 HKT or 22 Dec 2017 18:45 UTC
-var countDownDate = new Date(Date.UTC(2017, 11, 22, 18, 45, 0));
+var countDownDate = new Date(Date.UTC(2021, 10, 15, 18, 00, 0));
+
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+function setCountDownTime() {
+	// Try getting from url query
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	var dateField = urlParams.get('countdowndate');
+
+	let today = new Date().toISOString().substr(0, 10);
+	document.querySelector("#countdowndate").value = today;
+	document.getElementById("countdowndate").setAttribute("min", today);
+	if (typeof dateField === 'undefined' || dateField === null) {
+		// Try getting from cookies
+		dateField = getCookie("countDownDate");
+	}
+
+	if (typeof dateField !== 'undefined') {
+		document.getElementById("countdown").style.display = "block";
+		document.getElementById("title").innerHTML = "Time till " + dateField + " :";
+
+	} else {
+		document.getElementById("title").innerHTML = "Click the setting icon on the top right to get started";
+		document.getElementById("countdown").style.display = "none";
+	}
+	countDownDate = dateField;
+}
+
+function model() {
+	// Get the modal
+	var modal = document.getElementById("settingModal");
+
+	// Get the button that opens the modal
+	var btn = document.getElementById("setting");
+
+	var submit = document.getElementById("submit");
+
+	// Get the <span> element that closes the modal
+	var span = document.getElementsByClassName("close")[0];
+
+	// When the user clicks on the button, open the modal
+	btn.onclick = function() {
+	  modal.style.display = "block";
+	}
+
+	// When the user clicks on <span> (x), close the modal
+	span.onclick = function() {
+	  modal.style.display = "none";
+	}
+
+	submit.onSubmit = function() {
+		date = document.getElementById('countdowndate').value;
+		document.cookie = "countDownDate=" + date;
+		countDownDate = date;
+	}
+
+	// When the user clicks anywhere outside of the modal, close it
+	window.onclick = function(event) {
+	  if (event.target == modal) {
+	    modal.style.display = "none";
+	  }
+	}
+}
+
+setCountDownTime();
 
 // Update the count down every 1 second
 var x = setInterval(function() {
     // Get todays date and time
     var today = new Date();
     var now = today.getTime();
+
+    model();
     
     // Find the distance between now an the count down date
-    var distance = countDownDate - now;
+    var distance = Date.parse(countDownDate) - now;
     
     // Time calculations for days, hours, minutes and seconds
     var days = Math.floor(distance / (1000 * 60 * 60 * 24));

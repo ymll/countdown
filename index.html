@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 <link rel="stylesheet" href="css/index.css">
 
-<title>Sample countdown</title>
+<title>Countdown Timer</title>
 </head>
 <body>
 <div class="container">
@@ -15,15 +15,28 @@
   <div class="wrapper">
     <div id="text">
       <p>
+        <span id="title"></span>
+        <br>
+        <span id="countdown">
+        </span>
+      </p>
+      <p>
         <span id="clock"></span>
         <br>
         <span id="date"></span>
       </p>
-      <p>
-        <span id="title"></span>
-        <br>
-        <span id="countdown"></span>
-      </p>
+    </div>
+    <div id="settingModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Set Countdown Date:</p>
+        <form>
+          <label>
+            <input id="countdowndate" type="date" name="countdowndate" min="2021-09-20" pattern="\d{4}-\d{2}-\d{2}" 
+          </label>
+          <button id="submit">Submit</button>
+        </form>
+      </div>
     </div>
   </div>
   <div id="footer"></div>
