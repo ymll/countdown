@@ -73,6 +73,55 @@ p {
   line-height: 1.2em;
   font-weight: bolder;
 }
+/* Loading bar (issue #3):  •-----✈--------------❤
+   A plane flies from the dot (the day the date was picked) towards the
+   heart (the target date) as time passes. Hidden until a target date
+   and a start date are both known. */
+#progress {
+  display: none;
+  width: min(520px, 80%);
+  margin: 1em auto 0;
+  text-shadow: none;
+}
+#progress-track {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 3px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+}
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #ff8fab;
+  border-radius: 3px;
+}
+#progress-start,
+#progress-plane,
+#progress-end {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+}
+#progress-start {
+  left: 0;
+  font-size: 1.6em;
+}
+#progress-plane {
+  left: 0%;
+  font-size: 1.8em;
+}
+#progress-end {
+  left: 100%;
+  font-size: 1.4em;
+  color: #e63956;
+}
+#progress-label {
+  text-align: center;
+  font-size: 1.5em;
+  margin-top: 0.5em;
+}
 #footer {
   position: fixed;
   left: 0px;

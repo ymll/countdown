@@ -1,15 +1,17 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Personalised countdown timer — pick a date and watch the days tick down, with a little plane flying towards it.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amatic+SC|Fredericka+the+Great">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 <link rel="stylesheet" href="css/index.css">
 
 <title>Countdown Timer</title>
 </head>
 <body>
 <div class="container">
-  <div id="setting">
+  <div id="setting" role="button" tabindex="0" title="Settings" aria-label="Settings">
     <i class="fa fa-cog fa-2x" aria-hidden="true"></i>
   </div>
   <div class="wrapper">
@@ -20,6 +22,15 @@
         <span id="countdown">
         </span>
       </p>
+      <div id="progress">
+        <div id="progress-track">
+          <div id="progress-fill"></div>
+          <span id="progress-start" aria-hidden="true">&#8226;</span>
+          <span id="progress-plane" aria-hidden="true">&#9992;</span>
+          <span id="progress-end" aria-hidden="true">&#10084;</span>
+        </div>
+        <div id="progress-label"></div>
+      </div>
       <p>
         <span id="clock"></span>
         <br>
@@ -30,11 +41,11 @@
       <div class="modal-content">
         <span class="close">&times;</span>
         <p>Set Countdown Date:</p>
-        <form>
+        <form id="settingForm">
           <label>
-            <input id="countdowndate" type="date" name="countdowndate" min="2021-09-20" pattern="\d{4}-\d{2}-\d{2}" 
+            <input id="countdowndate" type="date" name="countdowndate" required>
           </label>
-          <button id="submit">Submit</button>
+          <button id="submit" type="submit">Submit</button>
         </form>
       </div>
     </div>
