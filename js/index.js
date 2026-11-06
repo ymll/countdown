@@ -44,8 +44,10 @@ function todayString() {
 // or null when progress can't be shown (no start, or no journey to measure).
 function computeProgress(startMs, targetMs, nowMs) {
   if (startMs == null || targetMs == null || isNaN(startMs) || isNaN(targetMs)) return null;
-  if (targetMs <= startMs) return null;
+  // Check arrival first: a target of today has start == target, so the
+  // non-positive-duration guard below must not hide the completed bar.
   if (nowMs >= targetMs) return 1;
+  if (targetMs <= startMs) return null;
   if (nowMs <= startMs) return 0;
   return (nowMs - startMs) / (targetMs - startMs);
 }
