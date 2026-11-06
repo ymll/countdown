@@ -62,7 +62,10 @@ function updateProgressBar(nowMs) {
     return;
   }
   bar.style.display = "block";
-  var pct = Math.round(progress * 100);
+  // Floor, don't round: 100% / "Arrived!" is reserved for actual
+  // completion (progress truly 1). Rounding would announce arrival
+  // while the countdown is still running (99.5%+ shows as 100%).
+  var pct = Math.floor(progress * 100);
   document.getElementById("progress-fill").style.width = pct + "%";
   document.getElementById("progress-plane").style.left = pct + "%";
   document.getElementById("progress-label").textContent =
