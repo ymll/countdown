@@ -82,8 +82,15 @@ function setCountDownTime() {
   var urlParams = new URLSearchParams(window.location.search);
   var dateField = urlParams.get("countdowndate");
   var startField = urlParams.get("start");
-  if (dateField == null) dateField = safeGetCookie("countDownDate");
-  if (startField == null) startField = safeGetCookie("countDownStart");
+  // Cookies are a pair, and only for a saved timer with no URL target:
+  // a shared link without ?start= must not borrow the start of whatever
+  // timer this browser saved, or the same link shows different progress
+  // to different people. A URL target without a start keeps its start
+  // unknown (bar hidden) instead.
+  if (dateField == null) {
+    dateField = safeGetCookie("countDownDate");
+    startField = safeGetCookie("countDownStart");
+  }
 
   var today = todayString();
   document.querySelector("#countdowndate").value = today;
