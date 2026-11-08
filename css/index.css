@@ -122,6 +122,14 @@ p {
   font-size: 1.5em;
   margin-top: 0.5em;
 }
+/* The target's zone, so it is clear what the date and time mean. */
+#tz-label {
+  display: none;
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 0.3em;
+  text-shadow: none;
+}
 #footer {
   position: fixed;
   left: 0px;
@@ -149,6 +157,17 @@ p {
 
 .modal-content form {
   margin-bottom: 1em;
+}
+
+.modal-content label {
+  display: block;
+  margin: 0.4em 0;
+}
+
+.modal-content input,
+.modal-content select {
+  font-size: 16px;
+  font-family: 'Open Sans', sans-serif;
 }
 
 form button {
