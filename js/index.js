@@ -4,7 +4,9 @@
 // the countDownDate cookie, or nothing (then the page asks you to pick one).
 // The loading bar (issue #3) also needs a start date: the day the target
 // was picked. It travels with the target as ?start= in the URL and in the
-// countDownStart cookie, so a shared link keeps its progress.
+// countDownStart cookie, so a shared link keeps its progress. A saved timer
+// from before the bar existed has no start, so on load it is given a start
+// of today (and saved) instead of hiding the bar forever.
 
 // Target and start as Date objects, or null until they are known.
 var countDownDate = null;
@@ -90,6 +92,21 @@ function setCountDownTime() {
   if (dateField == null) {
     dateField = safeGetCookie("countDownDate");
     startField = safeGetCookie("countDownStart");
+    // A saved timer from before the loading bar existed has a target
+    // but no start, so the bar would never show for it. Give it a
+    // start of today and save it, so the bar appears without having
+    // to re-pick the date. (A shared link without ?start= still keeps
+    // its start unknown — see below — so one person's saved start
+    // never leaks into someone else's link.)
+    if (parseDateParam(dateField) != null && parseDateParam(startField) == null) {
+      startField = todayString();
+      safeSetCookie("countDownStart", startField);
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.set("start", startField);
+        window.history.replaceState(null, "", url.toString());
+      } catch (err) { /* URL can't be updated (e.g. file://): the cookie still holds it */ }
+    }
   }
 
   var today = todayString();
