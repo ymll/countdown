@@ -2,6 +2,8 @@
 //
 // The target date comes from, in order: the ?countdowndate= URL param,
 // the countDownDate cookie, or nothing (then the page asks you to pick one).
+// An optional time (?time=HH:MM, countDownTime cookie) refines the target
+// to that time of day; without one the target is midnight (00:00).
 // The loading bar (issue #3) also needs a start date: the day the target
 // was picked. It travels with the target as ?start= in the URL and in the
 // countDownStart cookie, so a shared link keeps its progress. A saved timer
@@ -9,8 +11,10 @@
 // of today (and saved) instead of hiding the bar forever.
 
 // Target and start as Date objects, or null until they are known.
+// countDownTime is the target's time of day, "HH:MM" (default "00:00").
 var countDownDate = null;
 var countDownStart = null;
+var countDownTime = "00:00";
 
 // --- storage (cookies), guarded so a blocked store can't kill the app ---
 function safeGetCookie(name) {
@@ -39,6 +43,33 @@ function parseDateParam(value) {
 
 function todayString() {
   return new Date().toISOString().substr(0, 10);
+}
+
+// "HH:MM" (24-hour) or null. Anything else means "no time given" -> 00:00.
+function parseTimeParam(value) {
+  if (typeof value !== "string") return null;
+  var m = value.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  return m ? m[0] : null;
+}
+
+// "YYYY-MM-DD" + "HH:MM" -> UTC milliseconds for that date and time, or
+// null if the date isn't real. (The original code counted down to UTC
+// midnight, so a time is read as UTC here; the timezone setting refines
+// this into wall time in the chosen zone.)
+function dateTimeToUtcMs(dateStr, timeStr) {
+  if (!dateStr) return null;
+  var parts = dateStr.split("-");
+  if (parts.length !== 3) return null;
+  var y = parseInt(parts[0], 10), mo = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+  var t = parseTimeParam(timeStr) || "00:00";
+  var hh = parseInt(t.substr(0, 2), 10), mm = parseInt(t.substr(3, 2), 10);
+  var ms = Date.UTC(y, mo - 1, d, hh, mm);
+  if (isNaN(ms)) return null;
+  // Date.UTC rolls an impossible day (e.g. Feb 30) into the next month;
+  // only accept it if the date round-trips exactly.
+  var check = new Date(ms);
+  if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) return null;
+  return ms;
 }
 
 // --- the loading bar (issue #3):  •-----✈--------------❤ ---
@@ -76,21 +107,23 @@ function updateProgressBar(nowMs) {
 
 function showCountdownTitle(dateField) {
   document.getElementById("countdown").style.display = "block";
-  document.getElementById("title").innerHTML = "Time till " + dateField + " :";
+  document.getElementById("title").innerHTML = "Time till " + dateField + " " + countDownTime + " :";
 }
 
 function setCountDownTime() {
   // Try the URL query first, then cookies.
   var urlParams = new URLSearchParams(window.location.search);
   var dateField = urlParams.get("countdowndate");
+  var timeField = urlParams.get("time");
   var startField = urlParams.get("start");
-  // Cookies are a pair, and only for a saved timer with no URL target:
+  // Cookies are a set, and only for a saved timer with no URL target:
   // a shared link without ?start= must not borrow the start of whatever
   // timer this browser saved, or the same link shows different progress
   // to different people. A URL target without a start keeps its start
   // unknown (bar hidden) instead.
   if (dateField == null) {
     dateField = safeGetCookie("countDownDate");
+    timeField = safeGetCookie("countDownTime");
     startField = safeGetCookie("countDownStart");
     // A saved timer from before the loading bar existed has a target
     // but no start, so the bar would never show for it. Give it a
@@ -113,7 +146,12 @@ function setCountDownTime() {
   document.querySelector("#countdowndate").value = today;
   document.getElementById("countdowndate").setAttribute("min", today);
 
-  countDownDate = parseDateParam(dateField);
+  // No time given (old timer, old link) means midnight, as before.
+  countDownTime = parseTimeParam(timeField) || "00:00";
+  document.querySelector("#countdowntime").value = countDownTime;
+
+  var targetMs = dateTimeToUtcMs(dateField, countDownTime);
+  countDownDate = targetMs == null ? null : new Date(targetMs);
   countDownStart = parseDateParam(startField);
 
   if (countDownDate) {
@@ -156,21 +194,25 @@ function model() {
   // Saving a date used to rely on `submit.onSubmit`, which never fires
   // (buttons have no submit event), so the cookie was never saved and the
   // page only worked by accident via a form reload. Handle the form's
-  // submit properly instead: save target + start, update the URL so the
-  // link stays shareable, and refresh the page in place.
+  // submit properly instead: save target + time + start, update the URL
+  // so the link stays shareable, and refresh the page in place.
   document.getElementById("settingForm").addEventListener("submit", function(e) {
     e.preventDefault();
     var value = document.getElementById("countdowndate").value;
-    var target = parseDateParam(value);
-    if (!target) return;
+    var timeValue = parseTimeParam(document.getElementById("countdowntime").value) || "00:00";
+    var targetMs = dateTimeToUtcMs(value, timeValue);
+    if (targetMs == null) return;
     var start = todayString();
-    countDownDate = target;
+    countDownDate = new Date(targetMs);
+    countDownTime = timeValue;
     countDownStart = parseDateParam(start);
     safeSetCookie("countDownDate", value);
+    safeSetCookie("countDownTime", timeValue);
     safeSetCookie("countDownStart", start);
     try {
       var url = new URL(window.location.href);
       url.searchParams.set("countdowndate", value);
+      url.searchParams.set("time", timeValue);
       url.searchParams.set("start", start);
       window.history.replaceState(null, "", url.toString());
     } catch (err) { /* URL can't be updated (e.g. file://): cookies still hold it */ }
