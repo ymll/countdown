@@ -3,7 +3,11 @@
 // The target date comes from, in order: the ?countdowndate= URL param,
 // the countDownDate cookie, or nothing (then the page asks you to pick one).
 // An optional time (?time=HH:MM, countDownTime cookie) refines the target
-// to that time of day; without one the target is midnight (00:00).
+// to that time of day; without one the target is midnight (00:00). The
+// date+time are wall time in the target's timezone (?tz=IANA name,
+// countDownTz cookie, defaulting to the browser's local zone), so 9:00 in
+// Tokyo means 9:00 Tokyo time, and a shared link counts to the same
+// instant for everyone.
 // The loading bar (issue #3) also needs a start date: the day the target
 // was picked. It travels with the target as ?start= in the URL and in the
 // countDownStart cookie, so a shared link keeps its progress. A saved timer
@@ -12,9 +16,11 @@
 
 // Target and start as Date objects, or null until they are known.
 // countDownTime is the target's time of day, "HH:MM" (default "00:00").
+// countDownTz is the target's IANA timezone (default: the browser's local).
 var countDownDate = null;
 var countDownStart = null;
 var countDownTime = "00:00";
+var countDownTz = null;
 
 // --- storage (cookies), guarded so a blocked store can't kill the app ---
 function safeGetCookie(name) {
@@ -41,8 +47,13 @@ function parseDateParam(value) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function todayString() {
-  return new Date().toISOString().substr(0, 10);
+function todayString(tz) {
+  try {
+    var fmt = new Intl.DateTimeFormat("en-CA", { timeZone: tz || undefined, year: "numeric", month: "2-digit", day: "2-digit" });
+    return fmt.format(new Date());
+  } catch (e) {
+    return new Date().toISOString().substr(0, 10);
+  }
 }
 
 // "HH:MM" (24-hour) or null. Anything else means "no time given" -> 00:00.
@@ -52,24 +63,72 @@ function parseTimeParam(value) {
   return m ? m[0] : null;
 }
 
-// "YYYY-MM-DD" + "HH:MM" -> UTC milliseconds for that date and time, or
-// null if the date isn't real. (The original code counted down to UTC
-// midnight, so a time is read as UTC here; the timezone setting refines
-// this into wall time in the chosen zone.)
-function dateTimeToUtcMs(dateStr, timeStr) {
+// --- timezones (plain Intl, no dependencies) ---
+function localTimeZone() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch (e) {
+    return "UTC";
+  }
+}
+
+function isValidTimeZone(tz) {
+  if (typeof tz !== "string" || !tz) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// A stored or shared zone, or the browser's local zone when it is missing
+// or not a real IANA name.
+function resolveTimeZone(value) {
+  return isValidTimeZone(value) ? value : localTimeZone();
+}
+
+// Offset of a zone at a UTC instant, in ms: how far the zone's wall clock
+// sits ahead of UTC at that moment.
+function tzOffsetMs(tz, utcMs) {
+  var fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit"
+  });
+  var parts = {};
+  fmt.formatToParts(new Date(utcMs)).forEach(function(p) { parts[p.type] = p.value; });
+  var asUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  return asUtc - utcMs;
+}
+
+// "YYYY-MM-DD" + "HH:MM" wall time in a zone -> UTC milliseconds for that
+// instant, or null if the date isn't real or the wall time doesn't exist
+// (e.g. a time swallowed by a daylight-saving jump).
+function wallTimeToUtcMs(dateStr, timeStr, tz) {
   if (!dateStr) return null;
   var parts = dateStr.split("-");
   if (parts.length !== 3) return null;
   var y = parseInt(parts[0], 10), mo = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(mo) || isNaN(d)) return null;
   var t = parseTimeParam(timeStr) || "00:00";
   var hh = parseInt(t.substr(0, 2), 10), mm = parseInt(t.substr(3, 2), 10);
-  var ms = Date.UTC(y, mo - 1, d, hh, mm);
-  if (isNaN(ms)) return null;
-  // Date.UTC rolls an impossible day (e.g. Feb 30) into the next month;
-  // only accept it if the date round-trips exactly.
-  var check = new Date(ms);
-  if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) return null;
-  return ms;
+  var guess = Date.UTC(y, mo - 1, d, hh, mm);
+  // Correct the guess by the zone offset, twice: the offset is always
+  // subtracted from the original guess, and the second pass re-reads
+  // the offset at the first estimate, which nails DST boundaries.
+  // (Subtracting the second offset from the already-corrected value
+  // instead would apply the offset twice.)
+  var utc = guess - tzOffsetMs(tz, guess);
+  utc = guess - tzOffsetMs(tz, utc);
+  // Only accept it if the wall time in the zone round-trips exactly.
+  var check = {};
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+  }).formatToParts(new Date(utc)).forEach(function(p) { check[p.type] = p.value; });
+  if (+check.year !== y || +check.month !== mo || +check.day !== d || +check.hour !== hh || +check.minute !== mm) return null;
+  return utc;
 }
 
 // --- the loading bar (issue #3):  •-----✈--------------❤ ---
@@ -108,6 +167,43 @@ function updateProgressBar(nowMs) {
 function showCountdownTitle(dateField) {
   document.getElementById("countdown").style.display = "block";
   document.getElementById("title").innerHTML = "Time till " + dateField + " " + countDownTime + " :";
+  var label = document.getElementById("tz-label");
+  if (label) {
+    label.textContent = "Target: " + dateField + " " + countDownTime + " (" + countDownTz + ")";
+    label.style.display = "block";
+  }
+}
+
+// Fill the timezone dropdown: the full IANA list when the browser can
+// provide it, otherwise a short curated list of common zones. The
+// currently-selected zone is always present, even if it isn't in the
+// curated list.
+var CURATED_TIMEZONES = [
+  "UTC",
+  "America/Los_Angeles", "America/Denver", "America/Chicago", "America/New_York",
+  "America/Toronto", "America/Mexico_City", "America/Sao_Paulo",
+  "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Madrid", "Europe/Moscow",
+  "Africa/Cairo", "Africa/Lagos",
+  "Asia/Dubai", "Asia/Kolkata", "Asia/Dhaka", "Asia/Bangkok", "Asia/Singapore",
+  "Asia/Shanghai", "Asia/Taipei", "Asia/Hong_Kong", "Asia/Tokyo", "Asia/Seoul",
+  "Australia/Sydney", "Pacific/Auckland"
+];
+
+function populateTimeZoneSelect(select, selected) {
+  var zones = null;
+  try {
+    if (typeof Intl.supportedValuesOf === "function") zones = Intl.supportedValuesOf("timeZone");
+  } catch (e) { zones = null; }
+  if (!zones || !zones.length) zones = CURATED_TIMEZONES.slice();
+  if (zones.indexOf(selected) === -1) zones = [selected].concat(zones);
+  select.innerHTML = "";
+  zones.forEach(function(z) {
+    var opt = document.createElement("option");
+    opt.value = z;
+    opt.textContent = z;
+    select.appendChild(opt);
+  });
+  select.value = selected;
 }
 
 function setCountDownTime() {
@@ -116,6 +212,7 @@ function setCountDownTime() {
   var dateField = urlParams.get("countdowndate");
   var timeField = urlParams.get("time");
   var startField = urlParams.get("start");
+  var tzField = urlParams.get("tz");
   // Cookies are a set, and only for a saved timer with no URL target:
   // a shared link without ?start= must not borrow the start of whatever
   // timer this browser saved, or the same link shows different progress
@@ -125,34 +222,44 @@ function setCountDownTime() {
     dateField = safeGetCookie("countDownDate");
     timeField = safeGetCookie("countDownTime");
     startField = safeGetCookie("countDownStart");
-    // A saved timer from before the loading bar existed has a target
-    // but no start, so the bar would never show for it. Give it a
-    // start of today and save it, so the bar appears without having
-    // to re-pick the date. (A shared link without ?start= still keeps
-    // its start unknown — see below — so one person's saved start
-    // never leaks into someone else's link.)
-    if (parseDateParam(dateField) != null && parseDateParam(startField) == null) {
-      startField = todayString();
-      safeSetCookie("countDownStart", startField);
-      try {
-        var url = new URL(window.location.href);
-        url.searchParams.set("start", startField);
-        window.history.replaceState(null, "", url.toString());
-      } catch (err) { /* URL can't be updated (e.g. file://): the cookie still holds it */ }
-    }
+    tzField = safeGetCookie("countDownTz");
+  }
+  // The zone is needed before the start backfill below (today is
+  // measured in the timer's zone).
+  countDownTz = resolveTimeZone(tzField);
+  // A saved timer from before the loading bar existed has a target
+  // but no start, so the bar would never show for it. Give it a
+  // start of today (in the timer's zone) and save it, so the bar
+  // appears without having to re-pick the date. This only runs for
+  // a saved timer: a shared link without ?start= keeps its start
+  // unknown, so one person's saved start never leaks into someone
+  // else's link.
+  if (urlParams.get("countdowndate") == null &&
+      parseDateParam(dateField) != null && parseDateParam(startField) == null) {
+    startField = todayString(countDownTz);
+    safeSetCookie("countDownStart", startField);
+    try {
+      var url = new URL(window.location.href);
+      url.searchParams.set("start", startField);
+      window.history.replaceState(null, "", url.toString());
+    } catch (err) { /* URL can't be updated (e.g. file://): the cookie still holds it */ }
   }
 
-  var today = todayString();
+  var today = todayString(countDownTz);
   document.querySelector("#countdowndate").value = today;
   document.getElementById("countdowndate").setAttribute("min", today);
 
   // No time given (old timer, old link) means midnight, as before.
   countDownTime = parseTimeParam(timeField) || "00:00";
   document.querySelector("#countdowntime").value = countDownTime;
+  populateTimeZoneSelect(document.querySelector("#timezone"), countDownTz);
 
-  var targetMs = dateTimeToUtcMs(dateField, countDownTime);
+  var targetMs = wallTimeToUtcMs(dateField, countDownTime, countDownTz);
   countDownDate = targetMs == null ? null : new Date(targetMs);
-  countDownStart = parseDateParam(startField);
+  // The start is a date; its instant is midnight at the start of that
+  // day in the timer's zone.
+  var startMs = wallTimeToUtcMs(startField, "00:00", countDownTz);
+  countDownStart = startMs == null ? null : new Date(startMs);
 
   if (countDownDate) {
     showCountdownTitle(dateField);
@@ -160,6 +267,8 @@ function setCountDownTime() {
     document.getElementById("title").innerHTML = "Click the setting icon on the top right to get started";
     document.getElementById("countdown").style.display = "none";
     document.getElementById("progress").style.display = "none";
+    var tzLabel = document.getElementById("tz-label");
+    if (tzLabel) tzLabel.style.display = "none";
   }
 }
 
@@ -194,25 +303,29 @@ function model() {
   // Saving a date used to rely on `submit.onSubmit`, which never fires
   // (buttons have no submit event), so the cookie was never saved and the
   // page only worked by accident via a form reload. Handle the form's
-  // submit properly instead: save target + time + start, update the URL
-  // so the link stays shareable, and refresh the page in place.
+  // submit properly instead: save target + time + zone + start, update
+  // the URL so the link stays shareable, and refresh the page in place.
   document.getElementById("settingForm").addEventListener("submit", function(e) {
     e.preventDefault();
     var value = document.getElementById("countdowndate").value;
     var timeValue = parseTimeParam(document.getElementById("countdowntime").value) || "00:00";
-    var targetMs = dateTimeToUtcMs(value, timeValue);
+    var tzValue = resolveTimeZone(document.getElementById("timezone").value);
+    var targetMs = wallTimeToUtcMs(value, timeValue, tzValue);
     if (targetMs == null) return;
-    var start = todayString();
+    var start = todayString(tzValue);
     countDownDate = new Date(targetMs);
     countDownTime = timeValue;
-    countDownStart = parseDateParam(start);
+    countDownTz = tzValue;
+    countDownStart = new Date(wallTimeToUtcMs(start, "00:00", tzValue));
     safeSetCookie("countDownDate", value);
     safeSetCookie("countDownTime", timeValue);
+    safeSetCookie("countDownTz", tzValue);
     safeSetCookie("countDownStart", start);
     try {
       var url = new URL(window.location.href);
       url.searchParams.set("countdowndate", value);
       url.searchParams.set("time", timeValue);
+      url.searchParams.set("tz", tzValue);
       url.searchParams.set("start", start);
       window.history.replaceState(null, "", url.toString());
     } catch (err) { /* URL can't be updated (e.g. file://): cookies still hold it */ }
