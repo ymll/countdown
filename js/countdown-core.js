@@ -21,7 +21,7 @@
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return { days, hours, minutes, seconds: secs, arrived: target <= now };
+    return target <= now\n      ? { days: 0, hours: 0, minutes: 0, seconds: 0, arrived: true }\n      : { days, hours, minutes, seconds: secs, arrived: false };
   }
 
   function cleanName(value) {
