@@ -1,48 +1,41 @@
-<!DOCTYPE HTML>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amatic+SC|Fredericka+the+Great">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
-<link rel="stylesheet" href="css/index.css">
-
-<title>Countdown Timer</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172c61">
+  <meta name="description" content="A little shared sky for the moments you're counting down to.">
+  <title>Little Moments — Shared Sky Countdown</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
-<div class="container">
-  <div id="setting">
-    <i class="fa fa-cog fa-2x" aria-hidden="true"></i>
-  </div>
-  <div class="wrapper">
-    <div id="text">
-      <p>
-        <span id="title"></span>
-        <br>
-        <span id="countdown">
-        </span>
-      </p>
-      <p>
-        <span id="clock"></span>
-        <br>
-        <span id="date"></span>
-      </p>
-    </div>
-    <div id="settingModal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Set Countdown Date:</p>
-        <form>
-          <label>
-            <input id="countdowndate" type="date" name="countdowndate" min="2021-09-20" pattern="\d{4}-\d{2}-\d{2}" 
-          </label>
-          <button id="submit">Submit</button>
-        </form>
+<main class="app-shell">
+  <header class="topbar"><a class="brand" href="./"><span class="brand-mark">✳</span> little moments</a><button id="add-button" class="button button-glass" type="button">＋ Add a date</button></header>
+  <section class="hero"><p class="eyebrow">A LITTLE SOMETHING TO LOOK FORWARD TO</p><h1>One sky. <em>Two cities.</em></h1><p class="intro">Choose the places that connect you. Watch the sky change as the world turns, and every second bring you closer.</p></section>
+  <section class="workspace" aria-label="Your countdowns">
+    <aside class="saved-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR LIST</p><h2>Looking forward to</h2></div><span id="timer-count" class="count-pill">0 saved dates</span></div><ul id="countdown-list" class="countdown-list"></ul><p class="privacy-note">⌂ Your dates stay in this browser. Share one countdown with a link.</p></aside>
+    <section class="countdown-card">
+      <div id="empty-state" class="empty-state"><div class="empty-illustration">✈︎　♡</div><p class="eyebrow">MAKE A LITTLE ANTICIPATION</p><h2>Your next lovely moment<br>starts with a date.</h2><p>Add a date and give yourself something to look forward to.</p><button id="empty-add" class="button button-primary" type="button">Create your first countdown</button></div>
+      <div id="timer-view" class="sky-scene" hidden>
+        <div class="sky-wash" aria-hidden="true"></div>
+        <div class="city-clock city-clock-left"><label for="city-left">FROM</label><select id="city-left" aria-label="First city"></select><strong id="clock-left">--:--</strong><span id="date-left"></span></div>
+        <div class="city-clock city-clock-right"><label for="city-right">TO</label><select id="city-right" aria-label="Second city"></select><strong id="clock-right">--:--</strong><span id="date-right"></span></div>
+        <div class="sky-stars" aria-hidden="true">✦　·　✧　　　·　✦　　　✧　·</div>
+        <div class="moon" aria-hidden="true"></div><div class="sun" aria-hidden="true"></div>
+        <div class="flight-path" aria-hidden="true"><span>♡</span><b>✈</b></div>
+        <div class="countdown-copy"><p class="script-line">Next time we meet in...</p><h2 id="active-name"></h2><p id="target-date" class="target-date"></p>
+          <div class="time-grid" aria-label="Time remaining"><div class="time-unit days-unit"><strong id="count-days">0</strong><span>days</span></div><div class="time-unit"><strong id="count-hours">00</strong><span>hours</span></div><div class="time-unit"><strong id="count-minutes">00</strong><span>minutes</span></div><div class="time-unit seconds-unit"><strong id="count-seconds">00</strong><span>seconds</span></div></div>
+          <p class="together-line">Miles apart, but always together <span>♡</span></p>
+        </div>
+        <div class="skyline" aria-hidden="true"><div class="far-hills"></div><div class="buildings buildings-left"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="buildings buildings-right"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="water"></div></div>
+        <div class="scene-bottom"><div class="scene-controls"><label>Sky <select id="sky-theme" aria-label="Sky artwork"><option value="cutout">Cutout</option><option value="line">Line art</option></select></label><label>Display <select id="countdown-format" aria-label="Countdown units"><option value="days">Days → seconds</option><option value="hours">Hours → seconds</option><option value="minutes">Minutes → seconds</option></select></label><label class="progress-toggle"><input id="show-progress" type="checkbox" checked> Journey bar</label><button id="share-button" class="button button-glass" type="button">↗ Share</button></div><div id="journey" class="journey"><div class="journey-track"><span id="progress-fill"></span><b id="progress-plane">✈</b></div><p id="progress-label" class="progress-label"></p></div></div>
       </div>
-    </div>
-  </div>
-  <div id="footer"></div>
-</div>
-
-<script src="js/index.js"></script>
-<script src="https://use.fontawesome.com/4855f43d1e.js"></script>
-</body>
-</html>
+    </section>
+  </section>
+  <footer><span>Made for the moments that bring us together.</span><span>Free · No account · Your dates stay yours</span></footer>
+</main>
+<dialog id="timer-dialog" class="timer-dialog"><form id="timer-form" method="dialog"><div class="dialog-heading"><div><p class="eyebrow">A DATE TO LOOK FORWARD TO</p><h2>Create a countdown</h2></div><button id="cancel-button" class="icon-button" type="button" aria-label="Close">×</button></div><label for="timer-name">What are you counting down to?</label><input id="timer-name" name="name" maxlength="80" placeholder="e.g. Seeing Tommy again" required><label for="timer-date">When is it?</label><input id="timer-date" name="date" type="datetime-local" required><p class="field-hint">The date and time use your device's local timezone.</p><div class="dialog-actions"><button id="cancel-button-secondary" class="button button-soft" type="button">Cancel</button><button class="button button-primary" type="submit">Save countdown</button></div></form></dialog>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+<script src="js/countdown-core.js"></script><script src="js/index.js"></script>
+</body></html>
