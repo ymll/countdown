@@ -36,7 +36,7 @@
     $("timer-view").dataset.time=daypart(midpoint);
     $("timer-view").dataset.art=state.prefs.art;
     $("city-left").value=state.prefs.left;$("city-right").value=state.prefs.right;
-    $("sky-theme").value=state.prefs.art;$("show-progress").checked=state.prefs.progress;
+    $("sky-theme").value=state.prefs.art;$("show-progress").checked=state.prefs.progress;$("countdown-format").value=state.prefs.format;
   }
   function importLink(){
     const params=new URLSearchParams(location.search),at=params.get("at");
