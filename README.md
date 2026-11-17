@@ -1,46 +1,36 @@
-# Countdown Timer
+# Little Moments — Countdown
 
-A personalised countdown timer. Pick a date — a trip, a reunion, a birthday —
-and the page counts down the days, hours, minutes and seconds until it arrives,
-under a sky that changes with the time of day and a city skyline at the bottom.
+A free, no-account countdown for reunions, trips, birthdays and the small milestones that make life feel exciting. The original idea was personal: counting down until a long-distance couple could see each other again. This refresh keeps the plane-to-heart journey, and makes the tool useful for more than one date.
 
-Live at: https://ymll.github.io/countdown/
+**Live site:** https://ymll.github.io/countdown/
 
-## How to use
+## Use it
+- Add as many named dates as you like.
+- Pick a local date and time; the browser handles your device's timezone and daylight-saving rules.
+- Switch between saved countdowns, remove old ones, and share a link to one countdown.
+- Dates are stored only in this browser's local storage. A shared link contains only the selected event name and target time; it does not expose the rest of your list.
+- No account, server, analytics or third-party app dependency.
 
-- Open the page. Click the gear (⚙️) in the top right and pick a date.
-- The date is saved in a cookie and in the page URL, so the link is shareable:
-  `?countdowndate=2027-06-01&start=2026-11-06` opens the same countdown.
-- Under the countdown, a loading bar shows the journey: a plane (✈) flies
-  from the dot (•, the day the date was picked) towards the heart (❤, the
-  target date) as time passes.
-- When the day arrives the page says "Happy Reunion!"; ten days after the
-  date it suggests it's "Time to plan for next trip!"
-
-## Run it locally
-
-No build step, no dependencies to install — it's plain HTML, CSS and JavaScript:
-
+## Run locally
+No build step or dependencies:
 ```sh
 python3 -m http.server 8000
 ```
+Open http://localhost:8000/.
 
-then open http://localhost:8000/
+## Compatibility
+- Existing links using `?countdowndate=YYYY-MM-DD` are still imported as a “Next reunion” countdown.
+- Shared links use `?at=<ISO timestamp>&name=<event name>`.
+- Existing v1 browser cookies are not migrated automatically; open an old shared URL once to import it.
 
-## Files
+## Tests
+Run the pure logic tests with Node.js:
+```sh
+node --test
+```
 
-- `index.html` — page structure, including the loading bar (`#progress`)
-- `js/index.js` — countdown maths, sky colours, settings modal, loading bar
-- `css/index.css` — styles, including the loading bar
-- `resources/skyline.png` — the skyline silhouette along the bottom
-  (`skyline.psd` is the Photoshop source for it)
-
-## Notes
-
-- The countdown counts down to midnight UTC on the chosen date.
-- The loading bar only appears once a start date is known — the day the
-  target was picked. A shared link carries both dates, so the bar keeps
-  working for whoever opens it. A target opened without a start date
-  (e.g. an old `?countdowndate=` link) shows the countdown without the bar.
-- The sky background follows the local clock: night, dawn, day and dusk,
-  with a slow colour fade through the 5pm, 4pm and 6pm hours.
+## Project files
+- `index.html` — accessible page structure and create dialog
+- `css/index.css` — responsive visual design
+- `js/countdown-core.js` — tested date/progress helpers
+- `js/index.js` — local-first app, saved list, share links and live timer
