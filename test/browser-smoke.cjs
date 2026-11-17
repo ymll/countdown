@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, "..");
 const types = { ".html":"text/html", ".css":"text/css", ".js":"text/javascript", ".png":"image/png" };
 const server = http.createServer((req,res) => {
   const pathname = decodeURIComponent(new URL(req.url,"http://localhost").pathname);
-  const file = path.resolve(root, "." + pathname);
+  const file = path.resolve(root, pathname === "/" ? "index.html" : "." + pathname);
   if (!file.startsWith(root + path.sep) && file !== root) { res.writeHead(403).end(); return; }
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404).end(); return; }
