@@ -1,48 +1,82 @@
-<!DOCTYPE HTML>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amatic+SC|Fredericka+the+Great">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
-<link rel="stylesheet" href="css/index.css">
-
-<title>Countdown Timer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#dcecf0">
+  <meta name="description" content="Keep the dates you're looking forward to close. A thoughtful, free countdown for reunions, trips, birthdays and little milestones.">
+  <title>Little Moments — Countdown</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
-<div class="container">
-  <div id="setting">
-    <i class="fa fa-cog fa-2x" aria-hidden="true"></i>
-  </div>
-  <div class="wrapper">
-    <div id="text">
-      <p>
-        <span id="title"></span>
-        <br>
-        <span id="countdown">
-        </span>
-      </p>
-      <p>
-        <span id="clock"></span>
-        <br>
-        <span id="date"></span>
-      </p>
-    </div>
-    <div id="settingModal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Set Countdown Date:</p>
-        <form>
-          <label>
-            <input id="countdowndate" type="date" name="countdowndate" min="2021-09-20" pattern="\d{4}-\d{2}-\d{2}" 
-          </label>
-          <button id="submit">Submit</button>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div id="footer"></div>
-</div>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Little Moments home"><span class="brand-mark">✳</span> little moments</a>
+      <button id="add-button" class="button button-soft" type="button"><span aria-hidden="true">＋</span> Add a date</button>
+    </header>
 
-<script src="js/index.js"></script>
-<script src="https://use.fontawesome.com/4855f43d1e.js"></script>
+    <section class="hero" aria-labelledby="page-heading">
+      <p class="eyebrow">A LITTLE SOMETHING TO LOOK FORWARD TO</p>
+      <h1 id="page-heading">Good things are <em>on their way.</em></h1>
+      <p class="intro">The next visit. A long-awaited trip. A birthday worth celebrating.<br class="desktop-break"> Keep the moments that matter a little closer.</p>
+    </section>
+
+    <section class="workspace" aria-label="Your countdowns">
+      <aside class="saved-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">YOUR LIST</p><h2>Looking forward to</h2></div>
+          <span id="timer-count" class="count-pill">0 saved dates</span>
+        </div>
+        <ul id="countdown-list" class="countdown-list"></ul>
+        <p class="privacy-note"><span aria-hidden="true">⌂</span> Your dates stay in this browser. Share a link when you want someone to join the countdown.</p>
+      </aside>
+
+      <section class="countdown-card" aria-live="polite">
+        <div id="empty-state" class="empty-state">
+          <div class="empty-illustration" aria-hidden="true">✈︎　♡</div>
+          <p class="eyebrow">MAKE A LITTLE ANTICIPATION</p>
+          <h2>Your next lovely moment<br>starts with a date.</h2>
+          <p>Add a date and give yourself something to look forward to.</p>
+          <button id="empty-add" class="button button-primary" type="button">Create your first countdown</button>
+        </div>
+        <div id="timer-view" hidden>
+          <div class="card-topline"><span class="live-dot"></span> COUNTING DOWN TO</div>
+          <h2 id="active-name" class="active-name"></h2>
+          <p id="target-date" class="target-date"></p>
+          <div class="time-grid" aria-label="Time remaining">
+            <div class="time-unit days-unit"><strong id="count-days">0</strong><span>days</span></div>
+            <div class="time-unit"><strong id="count-hours">00</strong><span>hours</span></div>
+            <div class="time-unit"><strong id="count-minutes">00</strong><span>minutes</span></div>
+            <div class="time-unit"><strong id="count-seconds">00</strong><span>seconds</span></div>
+          </div>
+          <div class="journey">
+            <div class="journey-track"><span class="journey-start" aria-hidden="true">•</span><span id="progress-fill"></span><span id="progress-plane" aria-hidden="true">✈</span><span class="journey-end" aria-hidden="true">♥</span></div>
+            <p id="progress-label" class="progress-label"></p>
+          </div>
+          <p id="status-message" class="status-message"></p>
+          <button id="share-button" class="button button-primary share-button" type="button">↗ Share this countdown</button>
+        </div>
+      </section>
+    </section>
+    <footer><span>Made for the moments that bring us together.</span><span>Free · No account · Your dates stay yours</span></footer>
+  </main>
+
+  <dialog id="timer-dialog" class="timer-dialog">
+    <form id="timer-form" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">A DATE TO LOOK FORWARD TO</p><h2>Create a countdown</h2></div><button id="cancel-button" class="icon-button" type="button" aria-label="Close">×</button></div>
+      <label for="timer-name">What are you counting down to?</label>
+      <input id="timer-name" name="name" maxlength="80" placeholder="e.g. Seeing Tommy again" required>
+      <label for="timer-date">When is it?</label>
+      <input id="timer-date" name="date" type="datetime-local" required>
+      <p class="field-hint">The date and time use your device's local timezone.</p>
+      <div class="dialog-actions"><button id="cancel-button-secondary" class="button button-soft" type="button">Cancel</button><button class="button button-primary" type="submit">Save countdown</button></div>
+    </form>
+  </dialog>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <script src="js/countdown-core.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>
