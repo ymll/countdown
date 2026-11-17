@@ -50,11 +50,13 @@
     $("active-name").textContent=timer.name;$("target-date").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"full",timeStyle:"short"}).format(new Date(target));
     const format=state.prefs.format;
     $("count-days").textContent=remaining.days.toLocaleString();
-    $("count-hours").textContent=String(format==="minutes"?remaining.days*24+remaining.hours:remaining.hours).padStart(2,"0");
-    $("count-minutes").textContent=String(format==="minutes"?remaining.days*1440+remaining.hours*60+remaining.minutes:remaining.minutes).padStart(2,"0");
+    const totalHours=remaining.days*24+remaining.hours, totalMinutes=totalHours*60+remaining.minutes;
+    $("count-hours").textContent=String(format==="days"?remaining.hours:totalHours).padStart(2,"0");
+    $("count-minutes").textContent=String(format==="minutes"?totalMinutes:remaining.minutes).padStart(2,"0");
     $("count-seconds").textContent=String(remaining.seconds).padStart(2,"0");
     $("count-days").parentElement.hidden=format!=="days";
-    $("count-hours").parentElement.querySelector("span").textContent=format==="minutes"?"hours":"hours";
+    $("count-hours").parentElement.hidden=format==="minutes";
+    $("count-hours").parentElement.querySelector("span").textContent="hours";
     $("count-minutes").parentElement.querySelector("span").textContent="minutes";
     const progress=Core.progressBetween(Date.parse(timer.createdAt),target,state.now),pct=progress===null?100:Math.floor(progress*100);
     $("progress-fill").style.width=pct+"%";$("progress-plane").style.left=pct+"%";
