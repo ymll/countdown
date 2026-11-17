@@ -135,6 +135,7 @@
     } catch (error) { announce(error.message); }
   });
   $("cancel-button").addEventListener("click", () => $("timer-dialog").close());
+  $("cancel-button-secondary").addEventListener("click", () => $("timer-dialog").close());
   $("share-button").addEventListener("click", async () => {
     const timer = activeTimer();
     if (!timer) return;
