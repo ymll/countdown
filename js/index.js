@@ -8,15 +8,15 @@
     ["New York","America/New_York"],["San Francisco","America/Los_Angeles"],["Los Angeles","America/Los_Angeles"],["Vancouver","America/Vancouver"],["Toronto","America/Toronto"],
     ["London","Europe/London"],["Paris","Europe/Paris"],["Rome","Europe/Rome"],["Amsterdam","Europe/Amsterdam"],["Sydney","Australia/Sydney"]
   ];
-  const state = {timers:[],activeId:null,now:Date.now(),prefs:{left:"Asia/Hong_Kong",right:"America/New_York",art:"cutout",progress:true,format:"days"}};
+  const state = {timers:[],activeId:null,editingId:null,now:Date.now(),prefs:{left:"Asia/Hong_Kong",right:"America/New_York",art:"cutout",progress:true,format:"days"}};
   function readTimers(){try{const v=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");return Array.isArray(v)?v.filter(validTimer):[]}catch(_){return[]}}
   function validTimer(t){return t&&typeof t.id==="string"&&typeof t.name==="string"&&Number.isFinite(Date.parse(t.target))}
   function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state.timers))}catch(_){announce("This browser couldn't save your countdowns. You can still share a link.")}}
-  function loadPrefs(){try{const p=JSON.parse(localStorage.getItem(PREF_KEY)||"{}");if(p&&typeof p==="object")state.prefs={...state.prefs,...p}}catch(_){}}
+  function loadPrefs(){try{const p=JSON.parse(localStorage.getItem(PREF_KEY)||"{}");if(!p||typeof p!=="object")return;const zones=new Set(cities.map(city=>city[1]));if(zones.has(p.left))state.prefs.left=p.left;if(zones.has(p.right))state.prefs.right=p.right;if(p.art==="cutout"||p.art==="line")state.prefs.art=p.art;if(typeof p.progress==="boolean")state.prefs.progress=p.progress;if(["days","hours","minutes"].includes(p.format))state.prefs.format=p.format}catch(_){}}
   function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify(state.prefs))}catch(_){}}
   function announce(message){$("notice").textContent=message;$("notice").classList.add("visible");clearTimeout(announce.timeout);announce.timeout=setTimeout(()=>$("notice").classList.remove("visible"),3200)}
   function activeTimer(){return state.timers.find(t=>t.id===state.activeId)||null}
-  function setActive(id){state.activeId=id;render()}
+  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name)}else{url.searchParams.delete("at");url.searchParams.delete("name")}history.replaceState(null,"",url.toString())}catch(_){}}\n  function setActive(id){state.activeId=id;syncUrlForActiveTimer();render()}
   function cityByZone(zone){return cities.find(c=>c[1]===zone)||cities[0]}
   function fillCitySelects(){
     ["city-left","city-right"].forEach((id,index)=>{const select=$(id);select.replaceChildren();cities.forEach(([name,zone])=>{const option=document.createElement("option");option.value=zone;option.textContent=name;select.append(option)});select.value=index===0?state.prefs.left:state.prefs.right});
@@ -47,7 +47,7 @@
   function renderMain(){
     const timer=activeTimer(),empty=!timer;$("empty-state").hidden=!empty;$("timer-view").hidden=empty;if(empty)return;
     const target=Date.parse(timer.target),remaining=Core.formatRemaining(target,state.now);
-    $("active-name").textContent=timer.name;$("target-date").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"full",timeStyle:"short"}).format(new Date(target));
+    $("active-name").textContent=timer.name;$("target-date").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"full",timeStyle:"short"}).format(new Date(target));\n    const arrived=remaining.arrived;$("script-line").textContent=arrived?"The day is here!":"Counting down to...";$("time-grid").hidden=arrived;$("arrival-message").hidden=!arrived;
     const format=state.prefs.format;
     $("count-days").textContent=remaining.days.toLocaleString();
     const totalHours=remaining.days*24+remaining.hours, totalMinutes=totalHours*60+remaining.minutes;
@@ -72,13 +72,13 @@
       const date=document.createElement("span");date.className="item-date";date.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"medium"}).format(new Date(timer.target));
       select.append(name,date);select.addEventListener("click",()=>setActive(timer.id));
       const remove=document.createElement("button");remove.className="remove-button";remove.type="button";remove.setAttribute("aria-label","Delete "+timer.name);remove.textContent="×";
-      remove.addEventListener("click",()=>{state.timers=state.timers.filter(t=>t.id!==timer.id);if(state.activeId===timer.id)state.activeId=state.timers[0]?.id||null;save();render()});item.append(select,remove);list.append(item)});
+      remove.addEventListener("click",()=>{state.timers=state.timers.filter(t=>t.id!==timer.id);if(state.activeId===timer.id)state.activeId=state.timers[0]?.id||null;save();syncUrlForActiveTimer();render();announce("Countdown removed.")});item.append(select,remove);list.append(item)});
     $("timer-count").textContent=state.timers.length+(state.timers.length===1?" saved date":" saved dates");
   }
   function render(){renderList();renderMain()}
-  function openDialog(){$("timer-dialog").showModal();$("timer-name").focus()}
-  $("add-button").addEventListener("click",openDialog);$("empty-add").addEventListener("click",openDialog);
-  $("timer-form").addEventListener("submit",event=>{event.preventDefault();const value=$("timer-date").value;if(!value)return;try{const timer=Core.createTimer({name:$("timer-name").value,target:new Date(value).getTime()});state.timers.unshift(timer);state.activeId=timer.id;save();$("timer-dialog").close();$("timer-form").reset();render();announce("Your countdown is ready.")}catch(error){announce(error.message)}});
+  function toLocalInputValue(iso){const d=new Date(iso),pad=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())}\n  function openDialog(timer=null){state.editingId=timer?timer.id:null;$("timer-dialog-title").textContent=timer?"Edit countdown":"Create a countdown";$("save-timer-button").textContent=timer?"Save changes":"Save countdown";$("timer-name").value=timer?timer.name:"";$("timer-date").value=timer?toLocalInputValue(timer.target):"";$("timer-dialog").showModal();$("timer-name").focus()}
+  $("add-button").addEventListener("click",()=>openDialog());$("empty-add").addEventListener("click",()=>openDialog());$("edit-button").addEventListener("click",()=>{const timer=activeTimer();if(timer)openDialog(timer)});
+  $("timer-form").addEventListener("submit",event=>{event.preventDefault();const value=$("timer-date").value;if(!value)return;try{const existing=state.timers.find(t=>t.id===state.editingId);const timer=Core.createTimer({name:$("timer-name").value,target:new Date(value).getTime(),id:existing?.id,createdAt:existing?.createdAt});if(existing)state.timers=state.timers.map(t=>t.id===existing.id?timer:t);else state.timers.unshift(timer);state.activeId=timer.id;state.editingId=null;save();syncUrlForActiveTimer();$("timer-dialog").close();$("timer-form").reset();render();announce(existing?"Your changes are saved.":"Your countdown is ready.")}catch(error){announce(error.message)}});
   $("cancel-button").addEventListener("click",()=>$("timer-dialog").close());$("cancel-button-secondary").addEventListener("click",()=>$("timer-dialog").close());
   $("city-left").addEventListener("change",e=>{state.prefs.left=e.target.value;savePrefs();updateSky()});
   $("city-right").addEventListener("change",e=>{state.prefs.right=e.target.value;savePrefs();updateSky()});

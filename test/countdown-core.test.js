@@ -11,7 +11,7 @@ test("progress is clamped and only reaches 100% at arrival", () => {
 });
 test("progress rejects an invalid or zero-length journey before arrival", () => {
   assert.equal(progressBetween(0, 0, -1), null);
-  assert.equal(progressBetween(10, 5, 4), null);
+  assert.equal(progressBetween(10, 5, 4), null);\n  assert.equal(progressBetween(10, 5, 5), 1);
   assert.equal(progressBetween(NaN, 5, 4), null);
 });
 test("remaining time handles future and elapsed targets", () => {
@@ -24,7 +24,7 @@ test("names are trimmed and bounded", () => {
 });
 test("timer creation validates required fields and normalizes the instant", () => {
   assert.throws(() => createTimer({ name: " ", target: 100 }), /name/);
-  assert.throws(() => createTimer({ name: "Trip", target: "not a date" }), /date/);
+  assert.throws(() => createTimer({ name: "Trip", target: "not a date" }), /date/);\n  assert.throws(() => createTimer({ name: "Trip", target: Number.MAX_VALUE }), /date/);
   const timer = createTimer({ name: "Trip", target: "2027-01-01T00:00:00Z", id: "test-id", createdAt: "2026-01-01T00:00:00Z" });
   assert.equal(timer.id, "test-id");
   assert.equal(timer.target, "2027-01-01T00:00:00.000Z");
