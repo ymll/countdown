@@ -88,7 +88,25 @@
   $("sky-theme").addEventListener("change",e=>{state.prefs.art=e.target.value;savePrefs();updateSky()});
   $("show-progress").addEventListener("change",e=>{state.prefs.progress=e.target.checked;savePrefs();$("journey").hidden=!state.prefs.progress});
   $("countdown-format").addEventListener("change",e=>{state.prefs.format=e.target.value;savePrefs();renderMain()});
-  $("share-button").addEventListener("click",async()=>{const timer=activeTimer();if(!timer)return;const url=new URL(location.href);url.search="";url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);try{if(navigator.share)await navigator.share({title:timer.name+" — Countdown",url:url.toString()});else{await navigator.clipboard.writeText(url.toString());announce("Share link copied.")}}catch(error){if(error.name!=="AbortError")announce("Couldn't share this link. Try copying the page address.")}});
+  async function copyText(value){
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return}
+    const field=document.createElement("textarea");field.value=value;field.setAttribute("readonly","");
+    field.style.position="fixed";field.style.opacity="0";document.body.append(field);field.select();
+    let copied=false;try{copied=document.execCommand("copy")}finally{field.remove()}
+    if(!copied)throw new Error("Clipboard unavailable");
+  }
+  $("share-button").addEventListener("click",async()=>{
+    const timer=activeTimer();if(!timer)return;
+    const url=new URL(location.href);url.search="";url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);
+    try{
+      if(navigator.share)await navigator.share({title:timer.name+" — Little Moments",text:"A date to look forward to",url:url.toString()});
+      else{await copyText(url.toString());announce("Share link copied.")}
+    }catch(error){
+      if(error.name==="AbortError")return;
+      try{await copyText(url.toString());announce("Share link copied.")}
+      catch(_){announce("Couldn't copy automatically. You can copy the page address from your browser.")}
+    }
+  });
   loadPrefs();fillCitySelects();state.timers=readTimers();importLink();state.activeId=state.activeId||state.timers[0]?.id||null;
   state.timers.forEach(t=>{if(!t.createdAt||!Number.isFinite(Date.parse(t.createdAt)))t.createdAt=new Date().toISOString()});save();render();
   window.setInterval(()=>{state.now=Date.now();renderMain()},1000);
