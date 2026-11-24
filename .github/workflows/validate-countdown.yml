@@ -14,10 +14,10 @@ jobs:
           node-version: 22
       - name: Install browser test dependency
         run: npm install --no-save playwright
+      - name: Run logic tests
+        run: node --test test/countdown-core.test.js
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run logic tests
-        run: node --test
       - name: Run browser smoke test and capture screenshots
         run: mkdir -p artifacts && node test/browser-smoke.cjs
       - name: Upload visual review screenshots
