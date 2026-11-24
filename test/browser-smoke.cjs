@@ -46,8 +46,11 @@ const server = http.createServer((req,res) => {
   if (!(await page.locator("#count-minutes").isVisible())) throw new Error("Minutes display should remain visible.");
   await page.screenshot({path:"artifacts/countdown-created-desktop.png",fullPage:true});
   const link = new URL(page.url());
+  const createdAtBeforeReload=await page.evaluate(()=>JSON.parse(localStorage.getItem("countdown.timers.v2"))[0].createdAt);
   await page.reload();
   await page.getByText("Our summer trip").first().waitFor();
+  const createdAtAfterReload=await page.evaluate(()=>JSON.parse(localStorage.getItem("countdown.timers.v2"))[0].createdAt);
+  if(createdAtBeforeReload!==createdAtAfterReload)throw new Error("Reloading a shared URL must not reset journey progress.");
   await page.getByRole("button",{name:"Edit countdown"}).click();
   await page.getByLabel("When is it?").fill("2020-01-01T00:00");
   await page.getByRole("button",{name:"Save changes"}).click();

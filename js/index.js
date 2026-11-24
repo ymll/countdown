@@ -41,7 +41,7 @@
   }
   function importLink(){
     const params=new URLSearchParams(location.search),at=params.get("at");
-    if(at){try{const timer=Core.createTimer({name:params.get("name")||"A date to look forward to",target:at});state.timers=[timer,...state.timers.filter(t=>t.target!==timer.target||t.name!==timer.name)];state.activeId=timer.id;save();return}catch(_){}}
+    if(at){try{const imported=Core.createTimer({name:params.get("name")||"A date to look forward to",target:at});const timer=state.timers.find(t=>t.target===imported.target&&t.name===imported.name)||imported;if(timer===imported)state.timers.unshift(timer);state.activeId=timer.id;save();return}catch(_){}}
     const legacyDate=params.get("countdowndate");
     if(legacyDate&&/^\d{4}-\d{2}-\d{2}$/.test(legacyDate)){const [y,m,d]=legacyDate.split("-").map(Number);const timer=Core.createTimer({name:"Next reunion",target:new Date(y,m-1,d).getTime()});state.timers=[timer,...state.timers.filter(t=>t.target!==timer.target)];state.activeId=timer.id;save()}
   }
