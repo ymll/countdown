@@ -16,7 +16,7 @@
   function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify(state.prefs))}catch(_){}}
   function announce(message){$("notice").textContent=message;$("notice").classList.add("visible");clearTimeout(announce.timeout);announce.timeout=setTimeout(()=>$("notice").classList.remove("visible"),3200)}
   function activeTimer(){return state.timers.find(t=>t.id===state.activeId)||null}
-  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);url.searchParams.set("since",timer.createdAt);url.searchParams.set("since",timer.createdAt)}else{url.searchParams.delete("at");url.searchParams.delete("name");url.searchParams.delete("since")}history.replaceState(null,"",url.toString())}catch(_){}}
+  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);url.searchParams.set("since",timer.createdAt)}else{url.searchParams.delete("at");url.searchParams.delete("name");url.searchParams.delete("since")}history.replaceState(null,"",url.toString())}catch(_){}}
   function setActive(id){state.activeId=id;syncUrlForActiveTimer();render()}
   function cityByZone(zone){return cities.find(c=>c[1]===zone)||cities[0]}
   function fillCitySelects(){
@@ -97,7 +97,7 @@
   }
   $("share-button").addEventListener("click",async()=>{
     const timer=activeTimer();if(!timer)return;
-    const url=new URL(location.href);url.search="";url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);
+    const url=new URL(location.href);url.search="";url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);url.searchParams.set("since",timer.createdAt);
     try{
       if(navigator.share)await navigator.share({title:timer.name+" — Little Moments",text:"A date to look forward to",url:url.toString()});
       else{await copyText(url.toString());announce("Share link copied.")}
