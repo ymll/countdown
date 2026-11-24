@@ -56,8 +56,8 @@
     $("count-hours").textContent=String(format==="days"?remaining.hours:totalHours).padStart(2,"0");
     $("count-minutes").textContent=String(format==="minutes"?totalMinutes:remaining.minutes).padStart(2,"0");
     $("count-seconds").textContent=String(remaining.seconds).padStart(2,"0");
-    $("count-days").parentElement.hidden=format!=="days";
-    $("count-hours").parentElement.hidden=format==="minutes";
+    $("count-days").parentElement.style.display=format==="days"?"flex":"none";
+    $("count-hours").parentElement.style.display=format==="minutes"?"none":"flex";
     $("count-hours").parentElement.querySelector("span").textContent="hours";
     $("count-minutes").parentElement.querySelector("span").textContent="minutes";
     const progress=Core.progressBetween(Date.parse(timer.createdAt),target,state.now),pct=progress===null?100:Math.floor(progress*100);
