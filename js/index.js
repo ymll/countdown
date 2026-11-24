@@ -16,7 +16,8 @@
   function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify(state.prefs))}catch(_){}}
   function announce(message){$("notice").textContent=message;$("notice").classList.add("visible");clearTimeout(announce.timeout);announce.timeout=setTimeout(()=>$("notice").classList.remove("visible"),3200)}
   function activeTimer(){return state.timers.find(t=>t.id===state.activeId)||null}
-  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name)}else{url.searchParams.delete("at");url.searchParams.delete("name")}history.replaceState(null,"",url.toString())}catch(_){}}\n  function setActive(id){state.activeId=id;syncUrlForActiveTimer();render()}
+  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name)}else{url.searchParams.delete("at");url.searchParams.delete("name")}history.replaceState(null,"",url.toString())}catch(_){}}
+  function setActive(id){state.activeId=id;syncUrlForActiveTimer();render()}
   function cityByZone(zone){return cities.find(c=>c[1]===zone)||cities[0]}
   function fillCitySelects(){
     ["city-left","city-right"].forEach((id,index)=>{const select=$(id);select.replaceChildren();cities.forEach(([name,zone])=>{const option=document.createElement("option");option.value=zone;option.textContent=name;select.append(option)});select.value=index===0?state.prefs.left:state.prefs.right});
@@ -47,7 +48,8 @@
   function renderMain(){
     const timer=activeTimer(),empty=!timer;$("empty-state").hidden=!empty;$("timer-view").hidden=empty;if(empty)return;
     const target=Date.parse(timer.target),remaining=Core.formatRemaining(target,state.now);
-    $("active-name").textContent=timer.name;$("target-date").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"full",timeStyle:"short"}).format(new Date(target));\n    const arrived=remaining.arrived;$("script-line").textContent=arrived?"The day is here!":"Counting down to...";$("time-grid").hidden=arrived;$("arrival-message").hidden=!arrived;
+    $("active-name").textContent=timer.name;$("target-date").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"full",timeStyle:"short"}).format(new Date(target));
+    const arrived=remaining.arrived;$("script-line").textContent=arrived?"The day is here!":"Counting down to...";$("time-grid").hidden=arrived;$("arrival-message").hidden=!arrived;
     const format=state.prefs.format;
     $("count-days").textContent=remaining.days.toLocaleString();
     const totalHours=remaining.days*24+remaining.hours, totalMinutes=totalHours*60+remaining.minutes;
@@ -76,7 +78,8 @@
     $("timer-count").textContent=state.timers.length+(state.timers.length===1?" saved date":" saved dates");
   }
   function render(){renderList();renderMain()}
-  function toLocalInputValue(iso){const d=new Date(iso),pad=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())}\n  function openDialog(timer=null){state.editingId=timer?timer.id:null;$("timer-dialog-title").textContent=timer?"Edit countdown":"Create a countdown";$("save-timer-button").textContent=timer?"Save changes":"Save countdown";$("timer-name").value=timer?timer.name:"";$("timer-date").value=timer?toLocalInputValue(timer.target):"";$("timer-dialog").showModal();$("timer-name").focus()}
+  function toLocalInputValue(iso){const d=new Date(iso),pad=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())}
+  function openDialog(timer=null){state.editingId=timer?timer.id:null;$("timer-dialog-title").textContent=timer?"Edit countdown":"Create a countdown";$("save-timer-button").textContent=timer?"Save changes":"Save countdown";$("timer-name").value=timer?timer.name:"";$("timer-date").value=timer?toLocalInputValue(timer.target):"";$("timer-dialog").showModal();$("timer-name").focus()}
   $("add-button").addEventListener("click",()=>openDialog());$("empty-add").addEventListener("click",()=>openDialog());$("edit-button").addEventListener("click",()=>{const timer=activeTimer();if(timer)openDialog(timer)});
   $("timer-form").addEventListener("submit",event=>{event.preventDefault();const value=$("timer-date").value;if(!value)return;try{const existing=state.timers.find(t=>t.id===state.editingId);const timer=Core.createTimer({name:$("timer-name").value,target:new Date(value).getTime(),id:existing?.id,createdAt:existing?.createdAt});if(existing)state.timers=state.timers.map(t=>t.id===existing.id?timer:t);else state.timers.unshift(timer);state.activeId=timer.id;state.editingId=null;save();syncUrlForActiveTimer();$("timer-dialog").close();$("timer-form").reset();render();announce(existing?"Your changes are saved.":"Your countdown is ready.")}catch(error){announce(error.message)}});
   $("cancel-button").addEventListener("click",()=>$("timer-dialog").close());$("cancel-button-secondary").addEventListener("click",()=>$("timer-dialog").close());
