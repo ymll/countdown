@@ -1,9 +1,17 @@
 name: Validate countdown
+
 on:
   push:
-    branches: ["codex/**", "feature/**", "cleanup/**"]
+    branches: ["master"]
   pull_request:
     branches: [master]
+
+# A push to a PR branch also produces a pull_request:synchronize event.
+# Validate the PR once, and cancel stale runs when newer commits arrive.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
