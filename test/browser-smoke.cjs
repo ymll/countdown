@@ -18,7 +18,7 @@ const server = http.createServer((req,res) => {
   const browser = await chromium.launch({headless:true});
   const page = await browser.newPage({viewport:{width:1440,height:1000}, deviceScaleFactor:1});
   const errors=[];
-  page.on("pageerror", e => errors.push(e.message));
+  page.on("pageerror", e => { errors.push(e.message); console.log("PAGE ERROR",e.message); });
   await page.goto("http://127.0.0.1:4173/", {waitUntil:"networkidle"});
   await page.screenshot({path:"artifacts/countdown-desktop.png",fullPage:true});
   await page.getByRole("button",{name:"Add a date"}).click();
@@ -36,6 +36,7 @@ const server = http.createServer((req,res) => {
   if (new URL(page.url()).searchParams.get("name") !== "Our summer trip") throw new Error("Editing should update the share URL.");
   await page.getByRole("button",{name:"Share"}).waitFor();
   await page.locator("#countdown-format").selectOption("minutes");
+  await page.locator("#countdown-format").dispatchEvent("change");
   await page.getByLabel("First city").selectOption("Asia/Tokyo");
   await page.getByLabel("Second city").selectOption("Europe/London");
   await page.getByLabel("Journey bar").uncheck();
