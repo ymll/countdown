@@ -60,6 +60,9 @@ const server = http.createServer((req,res) => {
   await page.screenshot({path:"artifacts/countdown-arrived-desktop.png",fullPage:true});
   if (await page.locator("#city-left").inputValue() !== "Asia/Tokyo") throw new Error("City preference did not persist.");
   if (await page.locator("#countdown-format").inputValue() !== "minutes") throw new Error("Countdown precision did not persist.");
+  const legacy=await browser.newPage({viewport:{width:1280,height:800}});
+  await legacy.goto("http://127.0.0.1:4173/?countdowndate=2027-06-01",{waitUntil:"networkidle"});
+  if(await legacy.locator("#journey").isVisible())throw new Error("Legacy links without a known start must not invent journey progress.");
   const mobile = await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   await mobile.goto("http://127.0.0.1:4173/",{waitUntil:"networkidle"});
   await mobile.getByRole("button",{name:"Create your first countdown"}).click();
