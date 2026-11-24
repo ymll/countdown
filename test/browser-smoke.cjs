@@ -35,11 +35,13 @@ const server = http.createServer((req,res) => {
   await page.getByText("Our summer trip").first().waitFor();
   if (new URL(page.url()).searchParams.get("name") !== "Our summer trip") throw new Error("Editing should update the share URL.");
   await page.getByRole("button",{name:"Share"}).waitFor();
-  await page.getByLabel("Countdown units").selectOption("minutes");
+  await page.locator("#countdown-format").selectOption("minutes");
   await page.getByLabel("First city").selectOption("Asia/Tokyo");
   await page.getByLabel("Second city").selectOption("Europe/London");
   await page.getByLabel("Journey bar").uncheck();
   await page.getByLabel("Sky artwork").selectOption("line");
+  const formatDebug=await page.evaluate(()=>({value:document.querySelector("#countdown-format").value,daysDisplay:getComputedStyle(document.querySelector("#count-days").parentElement).display,daysStyle:document.querySelector("#count-days").parentElement.style.display}));
+  console.log("COUNTDOWN FORMAT DEBUG",JSON.stringify(formatDebug));
   await page.locator("#clock-left").waitFor();
   if (await page.locator("#journey").isVisible()) throw new Error("Journey bar should be hidden when switched off.");
   if (await page.locator("#count-days").isVisible()) throw new Error("Days should be hidden in minutes mode.");
