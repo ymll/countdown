@@ -1,0 +1,38 @@
+name: Validate countdown
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: [master]
+
+# A push to a PR branch also produces a pull_request:synchronize event.
+# Validate the PR once, and cancel stale runs when newer commits arrive.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser test dependency
+        run: npm install --no-save playwright
+      - name: Run logic tests
+        run: node --test test/countdown-core.test.js
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser smoke test and capture screenshots
+        run: mkdir -p artifacts && node test/browser-smoke.cjs
+      - name: Upload visual review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: countdown-visual-review
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
