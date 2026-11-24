@@ -30,4 +30,7 @@ test("timer creation validates required fields and normalizes the instant", () =
   const timer = createTimer({ name: "Trip", target: "2027-01-01T00:00:00Z", id: "test-id", createdAt: "2026-01-01T00:00:00Z" });
   assert.equal(timer.id, "test-id");
   assert.equal(timer.target, "2027-01-01T00:00:00.000Z");
+  assert.equal(timer.createdAt, "2026-01-01T00:00:00.000Z");
+  const safe = createTimer({ name: "Trip", target: "2027-01-01T00:00:00Z", createdAt: "not-a-date" });
+  assert.ok(Number.isFinite(Date.parse(safe.createdAt)));
 });

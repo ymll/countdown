@@ -27,6 +27,7 @@ const server = http.createServer((req,res) => {
   await page.getByRole("button",{name:"Save countdown"}).click();
   await page.getByText("Seeing Tommy again").first().waitFor();
   if (!new URL(page.url()).searchParams.has("at")) throw new Error("Active countdown should be reflected in the URL.");
+  if (!new URL(page.url()).searchParams.has("since")) throw new Error("Share URL should preserve the journey start.");
   await page.getByRole("button",{name:"Edit countdown"}).click();
   await page.getByLabel("What are you counting down to?").fill("Our summer trip");
   await page.getByLabel("When is it?").fill("2027-07-04T09:30");

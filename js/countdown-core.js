@@ -35,11 +35,13 @@
     const targetMs = typeof target === "number" ? target : Date.parse(target);
     if (!clean) throw new Error("Give your countdown a name.");
     if (!Number.isFinite(targetMs) || !Number.isFinite(new Date(targetMs).getTime())) throw new Error("Choose a valid date and time.");
+    const createdMs = createdAt == null ? Date.now() : (typeof createdAt === "number" ? createdAt : Date.parse(createdAt));
+    const safeCreatedAt = Number.isFinite(createdMs) && createdMs < targetMs ? new Date(createdMs).toISOString() : new Date().toISOString();
     return {
       id: id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2)),
       name: clean,
       target: new Date(targetMs).toISOString(),
-      createdAt: createdAt || new Date().toISOString()
+      createdAt: safeCreatedAt
     };
   }
 

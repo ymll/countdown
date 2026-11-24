@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const cities = [
     ["Hong Kong","Asia/Hong_Kong"],["Tokyo","Asia/Tokyo"],["Seoul","Asia/Seoul"],["Singapore","Asia/Singapore"],["Shanghai","Asia/Shanghai"],
-    ["New York","America/New_York"],["San Francisco","America/Los_Angeles"],["Los Angeles","America/Los_Angeles"],["Vancouver","America/Vancouver"],["Toronto","America/Toronto"],
+    ["New York","America/New_York"],["San Francisco","America/Los_Angeles"],["Vancouver","America/Vancouver"],["Toronto","America/Toronto"],
     ["London","Europe/London"],["Paris","Europe/Paris"],["Rome","Europe/Rome"],["Amsterdam","Europe/Amsterdam"],["Sydney","Australia/Sydney"]
   ];
   const state = {timers:[],activeId:null,editingId:null,now:Date.now(),prefs:{left:"Asia/Hong_Kong",right:"America/New_York",art:"cutout",progress:true,format:"days"}};
@@ -16,7 +16,7 @@
   function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify(state.prefs))}catch(_){}}
   function announce(message){$("notice").textContent=message;$("notice").classList.add("visible");clearTimeout(announce.timeout);announce.timeout=setTimeout(()=>$("notice").classList.remove("visible"),3200)}
   function activeTimer(){return state.timers.find(t=>t.id===state.activeId)||null}
-  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name)}else{url.searchParams.delete("at");url.searchParams.delete("name")}history.replaceState(null,"",url.toString())}catch(_){}}
+  function syncUrlForActiveTimer(){try{const url=new URL(location.href),timer=activeTimer();url.searchParams.delete("countdowndate");if(timer){url.searchParams.set("at",timer.target);url.searchParams.set("name",timer.name);url.searchParams.set("since",timer.createdAt);url.searchParams.set("since",timer.createdAt)}else{url.searchParams.delete("at");url.searchParams.delete("name");url.searchParams.delete("since")}history.replaceState(null,"",url.toString())}catch(_){}}
   function setActive(id){state.activeId=id;syncUrlForActiveTimer();render()}
   function cityByZone(zone){return cities.find(c=>c[1]===zone)||cities[0]}
   function fillCitySelects(){
@@ -41,7 +41,7 @@
   }
   function importLink(){
     const params=new URLSearchParams(location.search),at=params.get("at");
-    if(at){try{const imported=Core.createTimer({name:params.get("name")||"A date to look forward to",target:at});const timer=state.timers.find(t=>t.target===imported.target&&t.name===imported.name)||imported;if(timer===imported)state.timers.unshift(timer);state.activeId=timer.id;save();return}catch(_){}}
+    if(at){try{const imported=Core.createTimer({name:params.get("name")||"A date to look forward to",target:at,createdAt:params.get("since")||undefined});const existing=state.timers.find(t=>t.target===imported.target&&t.name===imported.name);let timer=imported;if(existing){timer=params.has("since")?{...existing,createdAt:imported.createdAt}:existing;state.timers=state.timers.map(t=>t.id===existing.id?timer:t)}else state.timers.unshift(timer);state.activeId=timer.id;save();return}catch(_){}}
     const legacyDate=params.get("countdowndate");
     if(legacyDate&&/^\d{4}-\d{2}-\d{2}$/.test(legacyDate)){const [y,m,d]=legacyDate.split("-").map(Number);const timer=Core.createTimer({name:"Next reunion",target:new Date(y,m-1,d).getTime()});state.timers=[timer,...state.timers.filter(t=>t.target!==timer.target)];state.activeId=timer.id;save()}
   }

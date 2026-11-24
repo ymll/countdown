@@ -20,7 +20,7 @@ Open http://localhost:8000/.
 
 ## Compatibility
 - Existing links using `?countdowndate=YYYY-MM-DD` are still imported as a “Next reunion” countdown.
-- Shared links use `?at=<ISO timestamp>&name=<event name>`.
+- Shared links use `?at=<ISO timestamp>&name=<event name>&since=<ISO timestamp>` so everyone sees the same journey progress.
 - Existing v1 browser cookies are not migrated automatically; open an old shared URL once to import it.
 
 ## Tests
